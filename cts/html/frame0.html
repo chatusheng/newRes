@@ -9,9 +9,205 @@
     <link rel="stylesheet" type="text/css" href="../css/style.css"/>
     <style>
         .empty{ text-align: center; padding: 120px 0; }
+        #getImg{
+          width: 200px;height:200px;margin:auto;
+          margin-top: 100px;
+          border-radius: 40px;
+          box-shadow: inset 0px 0px 20px 0px gray;
+          text-align: center;
+          line-height: 200px;
+        }
+        #imgInfo{
+          width: 320px;height:200px;margin:auto;
+          margin-top: 10px;
+          border-radius: 40px;
+          box-shadow: inset 0px 0px 20px 0px pink;
+        }
     </style>
 </head>
+<script type="text/javascript" src="../script/jquery.min.js"></script>
+<script>
+var baiduOCRRecognizer;
+  apiready = function() {
+
+          //  alert(1);
+        /*  var videoPlayer = api.require('videoPlayer');
+videoPlayer.play({
+                texts: {
+                    head: {
+                        title: '顶部文字'
+                    }
+                },
+                styles: {
+                    head: {
+                        bg: 'rgba(0.5,0.5,0.5,0.7)',
+                        height: 44,
+                        titleSize: 20,
+                        titleColor: '#fff',
+                        backSize: 44,
+                        backImg: 'fs://img/back.png',
+                        setSize: 44,
+                        setImg: 'fs://img/set.png'
+                    },
+                    foot: {
+                        bg: 'rgba(0.5,0.5,0.5,0.7)',
+                        height: 44,
+                        playSize: 44,
+                        playImg: 'fs://img/back.png',
+                        pauseImg: 'fs://img/back.png',
+                        nextSize: 44,
+                        nextImg: 'fs://img/back.png',
+                        timeSize: 14,
+                        timeColor: '#fff',
+                        sliderImg: 'fs://img/slder.png',
+                        progressColor: '#696969',
+                        progressSelected: '#76EE00'
+                    }
+                },
+                path: 'http://7o50kb.com2.z0.glb.qiniucdn.com/c1.1.mp4', //（可选项）字符串类型；文档的路径，支持网络和本地（fs://）路径；默认：未传值时不播放
+                //在 android 平台上不支持 widget://
+                autoPlay: true //（可选项）布尔类型；打开时是否自动播放；默认：true（自动播放）
+            }, function(ret, err) {
+                if (ret) {
+                    alert(JSON.stringify(ret));
+                } else {
+                    alert(JSON.stringify(err));
+                }
+            });*/
+            baiduOCRRecognizer = api.require('baiduOCRRecognizer');
+            //alert(demo);
+            baiduOCRRecognizer.init({
+              appKey: "FGZGew3tcFLQ5l32y355Q5cE",
+              appSecret: 'Y3fidOwhXXEk1771NxAFHA9UltkB1qdQ'
+            },function(ret,err){
+              if(!ret.state){
+                  baiduOCRRecognizer = null;
+              }
+
+          });
+          //alert($(".empty").text())
+          //银行卡
+          // demo.recognizeBankCard({
+          //   path:'widget://image/0101.png',
+          //   },function(ret,err) {
+          //       alert(JSON.stringify(err));
+          //       alert(JSON.stringify(ret));
+          //   });
+
+          //身份证
+      //     demo.recognizeIDCard({
+      //   path:'widget://image/0202.jpg',
+      //  },function(ret,err) {
+      //     api.alert({ msg:JSON.stringify(ret)});
+      //     api.alert({ msg:JSON.stringify(err)});
+      //          }
+      // );
+
+    //驾驶证
+      // demo.recognizeDrivingLicense({
+      //   path:'widget://image/0303.jpg',
+      //  },function(ret,err) {
+      //     api.alert({ msg:JSON.stringify(ret)});
+      //     api.alert({ msg:JSON.stringify(err)});
+      //          }
+      // );
+
+  $("#getImg").click(function(){
+
+    api.actionSheet({
+      cancelTitle: '取消',
+      buttons: ['拍照','相册']
+    },function(ret, err){
+        	if (ret.buttonIndex != 3) {
+              sourceTypes = ['camera', 'album'];
+              api.getPicture({
+                sourceType: sourceTypes[ret.buttonIndex - 1],
+                allowEdit: false,
+                quality: 100,
+                saveToPhotoAlbum: false
+              },function(ret, err){
+                  if (ret && ret.data) {
+                      var pathArr=[];
+                      var path = ret.data;
+                      pathArr.push(path);
+                      $("#getImg").css({
+                          'background-image': 'url('+ path +')',
+                          'background-repeat': 'no-repeat',
+                          'background-size': '100% 100%'
+                      });
+                      if(baiduOCRRecognizer){
+                            baiduOCRRecognizer.recognizeIDCard({
+                            path: path,
+                            },function(ret,err) {
+                                //$("#imgInfo").append(JSON.stringify(ret));
+                                if(ret){
+                                  $("#imgInfo").append("<p>姓名："+ret.words_result['姓名'].words+"</p>");
+                                  $("#imgInfo").append("<p>性别："+ret.words_result['性别'].words+"</p>");
+                                  $("#imgInfo").append("<p>民族："+ret.words_result['民族'].words+"</p>");
+                                  $("#imgInfo").append("<p>出生："+ret.words_result['出生'].words+"</p>");
+                                  $("#imgInfo").append("<p>住址："+ret.words_result['住址'].words+"</p>");
+                                  $("#imgInfo").append("<p>公民身份号码："+ret.words_result['公民身份号码'].words+"</p>");
+                                }
+                                //alert(JSON.stringify(err));
+                            });
+                      }
+
+                  }
+              });
+          }
+    });
+
+  });
+
+  }
+
+function showPDF2(){
+  var pdfReader = api.require('pdfReader');
+pdfReader.openView({
+    rect:{
+      x:0,
+      y: 0,
+      w:'auto',
+      h:'auto'
+    },
+    path:'http://dev.rhjc56.com:8888/group1/M00/00/04/rBKjoF3SQFSACXqOAAUFkYSoKyE601.pdf',
+    fixedOn:api.frameName,
+    fixed:true
+},function(ret){
+    alert(JSON.stringify(ret));
+});
+}
+function toAppStore(){
+  var mMarket = api.require('mMarket');
+		var param = {
+		    pkg : 'com.tencent.mobileqq'   //应用的包名
+		};
+		mMarket.androidScore(param);
+}
+//marketScore
+function toAppStore2(){
+  alert(api.systemType);
+  if (api.systemType == 'android') {
+    var smarket = api.require('marketScore');
+    smarket.myScore({
+        appname: 'com.tencent.mm'
+    });
+  } else {
+      api.openApp({
+          iosUrl: 'https://itunes.apple.com/cn/app/wei-xin/id414478124?mt=8'
+      });
+  }
+}
+function showPDF(){
+  alert(api.appVersion);
+}
+</script>
 <body>
-    <div class="empty">云API</div>
+    <!-- <div class="empty">云API</div> -->
+    <div style="" id="getImg">选择图片</div>
+    <div style="" id=imgInfo></div>
+    <div style="width:100px;height: 30px;border: 1px solid green;margin: 5px auto;line-height: 30px;text-align:center;border-radius: 5px;" onclick="showPDF();">查看</div>
+    <div style="width:100px;height: 30px;border: 1px solid green;margin: 5px auto;line-height: 30px;text-align:center;border-radius: 5px;" onclick="toAppStore();">appStore</div>
+    <div style="width:100px;height: 30px;border: 1px solid green;margin: 5px auto;line-height: 30px;text-align:center;border-radius: 5px;" onclick="toAppStore2();">appStore2</div>
 </body>
 </html>
